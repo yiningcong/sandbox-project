@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dau-etl-interview"
+version = "0.1.0"
+description = "Interview prototype: DAU analytics from Postgres accounts + Elasticsearch sessions, modeled for BigQuery"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+    "duckdb>=0.9",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+# Real-service adapters (optional; the prototype runs without them).
+# elasticsearch is pinned <9 to match the docker-compose ES 8.x server; the 9.x
+# client targets ES 9 and misbehaves against an 8.x cluster.
+docker = [
+    "psycopg[binary]>=3.1",
+    "elasticsearch>=8.12,<9",
+]
+
+[tool.setuptools]
+packages = ["src", "src.ingestion", "src.transformation"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

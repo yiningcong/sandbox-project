@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+build/
+dist/
+
+# Environment / secrets
+.env
+
+# Generated data (reproducible via `make sample-data`)
+data/raw/*
+data/processed/*
+data/sample/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/sample/.gitkeep
+
+# OS
+.DS_Store

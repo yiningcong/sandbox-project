@@ -1,0 +1,501 @@
+<title>DAU &amp; CCU Dashboard</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7;
+    --surface: #fcfcfb;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --muted: #898781;
+    --grid: #e1e0d9;
+    --axis: #c3c2b7;
+    --border: rgba(11, 11, 11, 0.10);
+    --series-1: #2a78d6;
+    --series-2: #eb6834;
+    --series-1-soft: rgba(42, 120, 214, 0.12);
+    --series-2-soft: rgba(235, 104, 52, 0.12);
+    --chip: #f0efe9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page: #0d0d0d;
+      --surface: #1a1a19;
+      --ink: #ffffff;
+      --ink-2: #c3c2b7;
+      --muted: #898781;
+      --grid: #2c2c2a;
+      --axis: #383835;
+      --border: rgba(255, 255, 255, 0.10);
+      --series-1: #3987e5;
+      --series-2: #d95926;
+      --series-1-soft: rgba(57, 135, 229, 0.16);
+      --series-2-soft: rgba(217, 89, 38, 0.16);
+      --chip: #262624;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --muted: #898781;
+    --grid: #2c2c2a;
+    --axis: #383835;
+    --border: rgba(255, 255, 255, 0.10);
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-1-soft: rgba(57, 135, 229, 0.16);
+    --series-2-soft: rgba(217, 89, 38, 0.16);
+    --chip: #262624;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--page);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+    padding: 0 16px 48px;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; }
+
+  /* Header */
+  .hd { padding: 28px 0 4px; }
+  .eyebrow {
+    font-size: 12px; font-weight: 600; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--series-1); margin-bottom: 6px;
+  }
+  .hd h1 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -.01em; }
+  .hd .sub { margin: 6px 0 0; color: var(--ink-2); font-size: 14px; }
+  .hd .sub b { color: var(--ink); font-weight: 650; }
+  .badge {
+    display: inline-block; margin-left: 8px; padding: 2px 9px; border-radius: 999px;
+    font-size: 11px; font-weight: 600; color: var(--ink-2);
+    background: var(--chip); border: 1px solid var(--border); vertical-align: 2px;
+  }
+
+  /* Filters */
+  .filters {
+    display: flex; flex-wrap: wrap; gap: 18px 28px; align-items: flex-end;
+    padding: 18px 20px; margin: 18px 0 16px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  }
+  .filter-group { display: flex; flex-direction: column; gap: 7px; }
+  .filter-label { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+  .presets { display: flex; gap: 6px; flex-wrap: wrap; }
+  .presets button {
+    appearance: none; cursor: pointer; font: inherit; font-size: 13px; font-weight: 600;
+    color: var(--ink-2); background: var(--chip); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 12px; transition: background .12s ease;
+  }
+  .presets button:hover { background: var(--grid); }
+  .presets button.active { background: var(--series-1); border-color: var(--series-1); color: #fff; }
+  select, input[type="date"] {
+    font: inherit; font-size: 13px; color: var(--ink); background: var(--surface);
+    border: 1px solid var(--axis); border-radius: 8px; padding: 6px 10px; min-width: 150px;
+  }
+  select:focus-visible, input[type="date"]:focus-visible, .presets button:focus-visible {
+    outline: 2px solid var(--series-1); outline-offset: 1px;
+  }
+  .custom { flex-direction: row; gap: 8px; align-items: center; }
+  .custom label { display: flex; flex-direction: column; gap: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--muted); }
+  .custom input[type="date"] { min-width: 142px; }
+
+  /* KPI tiles */
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
+  .kpi {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px 18px 14px;
+  }
+  .kpi .k-label { font-size: 12px; color: var(--ink-2); font-weight: 600; }
+  .kpi .k-value { display: block; font-size: 30px; font-weight: 700; letter-spacing: -.02em; line-height: 1.1; margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .kpi .k-sub { display: block; font-size: 12px; color: var(--muted); margin-top: 5px; }
+
+  /* Chart cards */
+  .chart {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px 20px 16px; margin-bottom: 16px;
+  }
+  .chart h2 { margin: 0; font-size: 15px; font-weight: 700; }
+  .chart .c-sub { margin: 2px 0 10px; font-size: 12.5px; color: var(--muted); }
+  .chart .c-sub b { color: var(--ink-2); }
+  .canvas-wrap { position: relative; height: 320px; }
+  .canvas-wrap.tall { height: 300px; }
+  .grid2 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; }
+  .grid2 .chart { margin-bottom: 16px; }
+
+  .note { font-size: 12px; font-weight: 500; color: var(--muted); margin-left: 6px; }
+
+  footer { margin-top: 8px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+  footer p { margin: 4px 0; }
+
+  @media (max-width: 760px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .grid2 { grid-template-columns: 1fr; }
+    .hd h1 { font-size: 22px; }
+    .kpi .k-value { font-size: 24px; }
+    .canvas-wrap { height: 260px; }
+  }
+  @media (max-width: 420px) {
+    .kpis { grid-template-columns: 1fr 1fr; gap: 10px; }
+  }
+</style>
+
+<div class="wrap">
+  <header class="hd">
+    <div class="eyebrow">Games-as-a-service · BI prototype</div>
+    <h1>Daily Active Users <span class="badge">mock data · seed 42</span></h1>
+    <p class="sub">
+      <b id="sub-users">…</b> distinct players · <b id="sub-span">…</b> years of service ·
+      DAU is <b>COUNT(DISTINCT user_id)</b>, all times UTC
+    </p>
+  </header>
+
+  <section class="filters">
+    <div class="filter-group">
+      <span class="filter-label">Range</span>
+      <div class="presets" id="presets">
+        <button type="button" data-range="7">7d</button>
+        <button type="button" data-range="30">30d</button>
+        <button type="button" data-range="90">90d</button>
+        <button type="button" data-range="365">1y</button>
+        <button type="button" data-range="all" class="active">All 3y</button>
+      </div>
+    </div>
+    <div class="filter-group">
+      <label class="filter-label" for="country">Country</label>
+      <select id="country"></select>
+    </div>
+    <div class="filter-group">
+      <label class="filter-label" for="platform">Platform</label>
+      <select id="platform"></select>
+    </div>
+    <div class="filter-group custom">
+      <label>From <input type="date" id="from"></label>
+      <label>To <input type="date" id="to"></label>
+    </div>
+  </section>
+
+  <section class="kpis">
+    <div class="kpi"><span class="k-label">Avg daily DAU</span><span class="k-value" id="k-avg">–</span><span class="k-sub" id="k-avg-sub">&nbsp;</span></div>
+    <div class="kpi"><span class="k-label">Peak daily DAU</span><span class="k-value" id="k-peak">–</span><span class="k-sub" id="k-peak-sub">&nbsp;</span></div>
+    <div class="kpi"><span class="k-label">Player-days in range</span><span class="k-value" id="k-sum">–</span><span class="k-sub">sum of daily DAU</span></div>
+    <div class="kpi"><span class="k-label">Peak CCU</span><span class="k-value" id="k-ccu">–</span><span class="k-sub" id="k-ccu-sub">&nbsp;</span></div>
+  </section>
+
+  <section class="chart">
+    <h2>Daily active users</h2>
+    <p class="c-sub" id="main-sub"></p>
+    <div class="canvas-wrap"><canvas id="dau"></canvas></div>
+  </section>
+
+  <section class="grid2">
+    <div class="chart">
+      <h2>Avg daily DAU by country</h2>
+      <p class="c-sub" id="country-sub"></p>
+      <div class="canvas-wrap tall"><canvas id="byCountry"></canvas></div>
+    </div>
+    <div class="chart">
+      <h2>Avg daily DAU by platform</h2>
+      <p class="c-sub" id="platform-sub"></p>
+      <div class="canvas-wrap tall"><canvas id="byPlatform"></canvas></div>
+    </div>
+  </section>
+
+  <section class="chart">
+    <h2>Concurrent users per hour <span class="note">sample day · minute-level avg</span></h2>
+    <div class="canvas-wrap"><canvas id="ccu"></canvas></div>
+  </section>
+
+  <footer>
+    <p><b>Method.</b> DAU = COUNT(DISTINCT user_id) per day; a user may appear once per platform per day.
+    Because distinct counts don't add up across platforms, the breakdowns show <b>average daily DAU</b> (additive) so every
+    filter stays correct. Countries are additive (one country per account).</p>
+    <p><b>Local prototype.</b> PostgreSQL → CSV, Elasticsearch → NDJSON, BigQuery → DuckDB (see <i>dashboard/build_data.py</i>).
+    Regenerate with <code>make sample-data &amp;&amp; make run &amp;&amp; make dashboard</code>. Deploy in Looker Studio by pointing its
+    connector at the production <code>fact_daily_user_activity</code> table (partitioned by day, clustered by country &amp; platform).</p>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script type="application/json" id="dau-data">__DATA_JSON__</script>
+<script>
+(function () {
+  "use strict";
+  var D = JSON.parse(document.getElementById("dau-data").textContent);
+  var MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var fmtInt = function (n) { return Math.round(n).toLocaleString("en-US"); };
+  var fmt1 = function (n) { return n.toLocaleString("en-US", { maximumFractionDigits: 1 }); };
+
+  function parseDate(s) { s = String(s); var p = s.split("-"); return { y: +p[0], m: +p[1], d: +p[2] }; }
+  function fmtFull(s) { var p = parseDate(s); return MONTHS[p.m - 1] + " " + p.d + ", " + p.y; }
+  function fmtTick(s, span) {
+    var p = parseDate(s);
+    if (span <= 120) return MONTHS[p.m - 1] + " " + p.d;
+    if (span <= 730) return MONTHS[p.m - 1] + " " + p.d + " ’" + String(p.y).slice(2);
+    return MONTHS[p.m - 1] + " " + p.y;
+  }
+
+  var css = function (name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); };
+
+  // --- filter state ---
+  var state = { preset: "all", from: null, to: null };
+  var $country = document.getElementById("country");
+  var $platform = document.getElementById("platform");
+  var $from = document.getElementById("from");
+  var $to = document.getElementById("to");
+
+  function fillSelects() {
+    $country.innerHTML = '<option value="All">All countries</option>' +
+      D.countries.map(function (c) { return '<option value="' + c + '">' + c + '</option>'; }).join("");
+    $platform.innerHTML = '<option value="All">All platforms</option>' +
+      D.platforms.map(function (p) { return '<option value="' + p + '">' + p + '</option>'; }).join("");
+    $from.min = D.meta.min_date; $from.max = D.meta.max_date;
+    $to.min = D.meta.min_date; $to.max = D.meta.max_date;
+    $from.value = D.meta.min_date; $to.value = D.meta.max_date;
+  }
+
+  function lastIndexWhere(arr, pred) {
+    for (var i = arr.length - 1; i >= 0; i--) { if (pred(arr[i])) return i; }
+    return -1;
+  }
+
+  function indices() {
+    var n = D.dates.length;
+    if (state.preset === "all") return [0, n - 1];
+    if (state.preset === "custom") {
+      var lo = 0, hi = n - 1;
+      if (state.from) { var a = D.dates.findIndex(function (d) { return d >= state.from; }); if (a >= 0) lo = a; }
+      if (state.to) { var b = lastIndexWhere(D.dates, function (d) { return d <= state.to; }); if (b >= 0) hi = b; }
+      if (lo > hi) { var t = lo; lo = hi; hi = t; }
+      return [lo, hi];
+    }
+    var days = parseInt(state.preset, 10);
+    return [Math.max(0, n - days), n - 1];
+  }
+
+  function seriesFor(country, platform) {
+    if (country === "All" && platform === "All") return D.daily;
+    if (country === "All") return D.dailyByPlatform[platform] || [];
+    if (platform === "All") return D.dailyByCountry[country] || [];
+    return ((D.dailyByCountryPlatform[country] || {})[platform]) || [];
+  }
+
+  // --- chart registry ---
+  var charts = { dau: null, byCountry: null, byPlatform: null, ccu: null };
+  function destroyAll() { Object.keys(charts).forEach(function (k) { if (charts[k]) { charts[k].destroy(); charts[k] = null; } }); }
+
+  Chart.defaults.font.family = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+  Chart.defaults.font.size = 12;
+
+  function barLabels() {
+    return {
+      id: "barLabels",
+      afterDatasetsDraw: function (c) {
+        var meta = c.getDatasetMeta(0);
+        var ctx = c.ctx;
+        var ink2 = css("--ink-2");
+        ctx.save();
+        ctx.font = "600 11px system-ui, -apple-system, sans-serif";
+        ctx.fillStyle = ink2;
+        ctx.textBaseline = "middle";
+        meta.data.forEach(function (el, i) {
+          if (el.hidden) return;
+          var v = c.data.datasets[0].data[i];
+          if (!v) return;
+          ctx.textAlign = "left";
+          ctx.fillText(fmtInt(v), el.x + 6, el.y);
+        });
+        ctx.restore();
+      }
+    };
+  }
+
+  function renderDau(lo, hi, country, platform, span) {
+    var labels = D.dates.slice(lo, hi + 1);
+    var data = seriesFor(country, platform).slice(lo, hi + 1);
+    var blue = css("--series-1"), blueSoft = css("--series-1-soft");
+    var muted = css("--muted"), grid = css("--grid");
+    charts.dau = new Chart(document.getElementById("dau"), {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [{ data: data, borderColor: blue, backgroundColor: blueSoft, fill: true, borderWidth: 2, pointRadius: 0, pointHoverRadius: 4, tension: 0.2 }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: function (items) { return items.length ? fmtFull(items[0].label) : ""; },
+              label: function (item) { return " DAU: " + fmtInt(item.parsed.y); }
+            }
+          }
+        },
+        scales: {
+          x: { grid: { display: false }, border: { color: css("--axis") }, ticks: { color: muted, maxTicksLimit: 10, autoSkip: true, maxRotation: 0, callback: function (value) { var lbl = labels[value]; return lbl ? fmtTick(lbl, span) : ""; } } },
+          y: { beginAtZero: true, border: { display: false }, grid: { color: grid }, ticks: { color: muted } }
+        }
+      }
+    });
+  }
+
+  function renderCountry(lo, hi, country, platform) {
+    var blue = css("--series-1"), muted = css("--muted"), grid = css("--grid");
+    var rows = D.countries.map(function (c) {
+      var s = (platform === "All")
+        ? (D.dailyByCountry[c] || [])
+        : ((D.dailyByCountryPlatform[c] || {})[platform] || []);
+      var sl = s.slice(lo, hi + 1);
+      var avg = sl.length ? sl.reduce(function (a, b) { return a + b; }, 0) / sl.length : 0;
+      return { label: c, value: avg };
+    }).filter(function (r) { return r.value > 0; }).sort(function (a, b) { return b.value - a.value; });
+
+    charts.byCountry = new Chart(document.getElementById("byCountry"), {
+      type: "bar",
+      data: { labels: rows.map(function (r) { return r.label; }), datasets: [{ data: rows.map(function (r) { return r.value; }), backgroundColor: blue, borderRadius: 4, barThickness: 16 }] },
+      options: {
+        indexAxis: "y", responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: function (item) { return " " + fmt1(item.parsed.x) + " avg daily DAU"; } } }
+        },
+        scales: {
+          x: { beginAtZero: true, border: { display: false }, grid: { color: grid }, ticks: { color: muted } },
+          y: { grid: { display: false }, border: { display: false }, ticks: { color: css("--ink-2"), font: { weight: "600" } } }
+        }
+      },
+      plugins: [barLabels()]
+    });
+  }
+
+  function renderPlatform(lo, hi, country, platform) {
+    var blue = css("--series-1"), muted = css("--muted"), grid = css("--grid");
+    var rows = D.platforms.map(function (p) {
+      var s = (country === "All")
+        ? (D.dailyByPlatform[p] || [])
+        : ((D.dailyByCountryPlatform[country] || {})[p] || []);
+      var sl = s.slice(lo, hi + 1);
+      var avg = sl.length ? sl.reduce(function (a, b) { return a + b; }, 0) / sl.length : 0;
+      return { label: p, value: avg };
+    }).sort(function (a, b) { return b.value - a.value; });
+
+    charts.byPlatform = new Chart(document.getElementById("byPlatform"), {
+      type: "bar",
+      data: { labels: rows.map(function (r) { return r.label; }), datasets: [{ data: rows.map(function (r) { return r.value; }), backgroundColor: blue, borderRadius: 4, barThickness: 22 }] },
+      options: {
+        indexAxis: "y", responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: function (item) { return " " + fmt1(item.parsed.x) + " avg daily DAU"; } } }
+        },
+        scales: {
+          x: { beginAtZero: true, border: { display: false }, grid: { color: grid }, ticks: { color: muted } },
+          y: { grid: { display: false }, border: { display: false }, ticks: { color: css("--ink-2"), font: { weight: "600" } } }
+        }
+      },
+      plugins: [barLabels()]
+    });
+  }
+
+  function renderCcu() {
+    var orange = css("--series-2"), orangeSoft = css("--series-2-soft");
+    var muted = css("--muted"), grid = css("--grid");
+    charts.ccu = new Chart(document.getElementById("ccu"), {
+      type: "line",
+      data: {
+        labels: D.ccu.map(function (r) { return r[0]; }),
+        datasets: [{ data: D.ccu.map(function (r) { return r[1]; }), borderColor: orange, backgroundColor: orangeSoft, fill: true, borderWidth: 2, pointRadius: 0, pointHoverRadius: 4, tension: 0.3 }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: function (item) { return " CCU: " + fmtInt(item.parsed.y); } } }
+        },
+        scales: {
+          x: { grid: { display: false }, border: { color: css("--axis") }, ticks: { color: muted, maxTicksLimit: 12, maxRotation: 0 } },
+          y: { beginAtZero: true, border: { display: false }, grid: { color: grid }, ticks: { color: muted } }
+        }
+      }
+    });
+  }
+
+  function render() {
+    var loHi = indices(), lo = loHi[0], hi = loHi[1];
+    var span = hi - lo + 1;
+    var country = $country.value, platform = $platform.value;
+
+    var rangeLabel = (span >= D.meta.n_days) ? "All time (" + span + " days)" : fmtFull(D.dates[lo]) + " – " + fmtFull(D.dates[hi]);
+    document.getElementById("main-sub").innerHTML =
+      "Range: <b>" + rangeLabel + "</b> · " + (country === "All" ? "All countries" : country) + " · " + (platform === "All" ? "All platforms" : platform);
+
+    // KPIs
+    var series = seriesFor(country, platform).slice(lo, hi + 1);
+    var avg = series.reduce(function (a, b) { return a + b; }, 0) / Math.max(1, series.length);
+    var peak = Math.max.apply(null, series.concat([0]));
+    var peakIdx = series.lastIndexOf(peak);
+    var sum = series.reduce(function (a, b) { return a + b; }, 0);
+
+    document.getElementById("k-avg").textContent = fmt1(avg);
+    document.getElementById("k-avg-sub").textContent = "per day in range";
+    document.getElementById("k-peak").textContent = fmtInt(peak);
+    document.getElementById("k-peak-sub").textContent = peakIdx >= 0 ? "on " + fmtFull(D.dates[lo + peakIdx]) : " ";
+    document.getElementById("k-sum").textContent = fmtInt(sum);
+    document.getElementById("k-ccu").textContent = fmtInt(D.meta.peak_ccu[1]);
+    document.getElementById("k-ccu-sub").textContent = "at " + D.meta.peak_ccu[0] + " UTC";
+
+    // Country / platform chart subtitles
+    document.getElementById("country-sub").textContent =
+      platform === "All" ? "all platforms · " + rangeLabel.toLowerCase() : platform + " only · " + rangeLabel.toLowerCase();
+    document.getElementById("platform-sub").textContent =
+      country === "All" ? "all countries · " + rangeLabel.toLowerCase() : country + " only · " + rangeLabel.toLowerCase();
+
+    destroyAll();
+    renderDau(lo, hi, country, platform, span);
+    renderCountry(lo, hi, country, platform);
+    renderPlatform(lo, hi, country, platform);
+    renderCcu();
+  }
+
+  // --- header summary ---
+  var years = (D.meta.n_days / 365.25).toFixed(1);
+  document.getElementById("sub-users").textContent = fmtInt(D.meta.total_users);
+  document.getElementById("sub-span").textContent = years;
+
+  // --- wiring ---
+  document.getElementById("presets").addEventListener("click", function (e) {
+    var b = e.target.closest("button");
+    if (!b) return;
+    document.querySelectorAll("#presets button").forEach(function (x) { x.classList.remove("active"); });
+    b.classList.add("active");
+    state.preset = b.getAttribute("data-range");
+    render();
+  });
+  $country.addEventListener("change", render);
+  $platform.addEventListener("change", render);
+  function onCustom() {
+    state.preset = "custom";
+    state.from = $from.value || null;
+    state.to = $to.value || null;
+    document.querySelectorAll("#presets button").forEach(function (x) { x.classList.remove("active"); });
+    render();
+  }
+  $from.addEventListener("change", onCustom);
+  $to.addEventListener("change", onCustom);
+
+  // Re-render on OS theme change so chart ink/colors follow the theme tokens.
+  var mq = window.matchMedia("(prefers-color-scheme: dark)");
+  if (mq.addEventListener) mq.addEventListener("change", render);
+
+  fillSelects();
+  render();
+})();
+</script>
