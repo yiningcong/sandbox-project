@@ -15,6 +15,12 @@ cloud credentials, no Docker, no daemons required.
 
 ---
 
+## 🚀 Interactive Dashboard
+
+[Open the live DAU Dashboard](https://yiningcong.github.io/sandbox-project/)
+
+---
+
 ## Architecture
 
 ```
