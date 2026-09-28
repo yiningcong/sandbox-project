@@ -106,6 +106,24 @@ truncate + reload / re-create + re-index). The 200 intentionally-invalid sample 
 reports 0 quarantined rows when reading ES (the CSV mock keeps them to exercise the DQ
 checks). The pipeline output is otherwise identical between the two sources.
 
+### See the result in Looker Studio
+
+Looker Studio cannot read local files (Parquet / DuckDB / the local HTML dashboard) — it
+only connects to sources it can reach. `make looker-export` writes the two CSVs it needs,
+and `docs/looker-studio.md` walks through both ways in, click by click:
+
+```bash
+make looker-export      # looker_studio/fact_daily_user_activity.csv + hourly_ccu.csv
+```
+
+1. **Google Sheets (no cloud credentials)** — upload those two CSVs to a sheet, connect
+   Looker Studio's Google Sheets connector, and add `COUNT_DISTINCT(user_id)` metrics. This
+   is the "runs locally" analog, in the same spirit as DuckDB standing in for BigQuery.
+2. **BigQuery (production)** — create the table with `sql/schemas/bigquery_schema.sql`,
+   load the fact CSV, and use the native connector. Scale-correct, needs GCP credentials.
+
+The local `dashboard/index.html` is the zero-credential proof of the same model and charts.
+
 ---
 
 ## How the pipeline works
@@ -184,10 +202,10 @@ local demo (`make ccu`) runs the equivalent DuckDB query against
 ## Repository layout
 
 ```
-├── Makefile                 # setup / sample-data / run / ccu / dashboard / seed / test / clean
+├── Makefile                 # setup / sample-data / run / ccu / dashboard / looker-export / seed / test / clean
 ├── pyproject.toml           # deps: duckdb (+ optional psycopg/elasticsearch)
 ├── docker-compose.yml       # optional real Postgres + Elasticsearch
-├── docs/                    # architecture, assumptions, data model, interview notes
+├── docs/                    # architecture, assumptions, data model, interview notes, looker-studio
 ├── src/
 │   ├── ingestion/           # Postgres + Elasticsearch sources (mock + real)
 │   ├── transformation/      # daily_activity transform (SQL) + DAU query
@@ -198,8 +216,10 @@ local demo (`make ccu`) runs the equivalent DuckDB query against
 │   ├── staging/             # stg_sessions.sql
 │   ├── marts/               # daily_user_activity.sql, daily_dau.sql, hourly_ccu.sql
 │   └── schemas/             # bigquery_schema.sql (partitioned + clustered)
+├── dashboard/               # local HTML dashboard + looker_studio CSV export
 ├── tests/                   # pytest (DAU, dedupe, DQ, CCU, reproducibility)
 ├── dashboard/README.md      # Looker Studio connection + dashboard spec
+├── looker_studio/           # CSVs to upload to Google Sheets / BigQuery (generated)
 └── data/                    # raw/ processed/ sample/ (generated)
 ```
 

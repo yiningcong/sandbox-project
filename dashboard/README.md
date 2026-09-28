@@ -1,8 +1,12 @@
 # Dashboard specification (Looker Studio)
 
+> **To actually see this in Looker Studio**, run `make looker-export` and follow
+> `docs/looker-studio.md` — it walks through the Google Sheets connector (no cloud
+> credentials) and the production BigQuery path. Looker Studio cannot read the local
+> Parquet/HTML directly; that is why this file is a spec rather than a live report.
+
 The dashboard queries the **analytical model** (`fact_daily_user_activity` in BigQuery),
-never raw sessions. Looker Studio connects to BigQuery with the native connector — no
-deployment is required for this prototype; this document is the spec.
+never raw sessions. Looker Studio connects to BigQuery with the native connector.
 
 ## Data source
 

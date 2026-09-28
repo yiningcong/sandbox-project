@@ -7,7 +7,7 @@ PYENV_PYTHON   := $(HOME)/.pyenv/versions/$(PYTHON_VERSION)/bin/python
 DEPS_STAMP     := $(VENV)/.deps-installed
 DOCKER_STAMP   := $(VENV)/.docker-deps-installed
 
-.PHONY: setup sample-data run ccu dashboard docker-setup seed test clean
+.PHONY: setup sample-data run ccu dashboard looker-export docker-setup seed test clean
 
 ## Default: create the venv with the pinned Python and install dependencies.
 setup: $(DEPS_STAMP)
@@ -42,6 +42,10 @@ ccu: $(DEPS_STAMP)
 ## Build the dashboard dataset + HTML (requires `make sample-data` and `make run`).
 dashboard: $(DEPS_STAMP)
 	$(PY) dashboard/build_data.py
+
+## Export the CSVs Looker Studio consumes (upload to Google Sheets; see docs/looker-studio.md).
+looker-export: $(DEPS_STAMP)
+	$(PY) dashboard/export_looker.py
 
 ## Install the optional deps (psycopg, elasticsearch) for the real-service adapters.
 docker-setup: $(DOCKER_STAMP)
