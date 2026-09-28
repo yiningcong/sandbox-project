@@ -1,67 +1,51 @@
 # Interview notes
 
 ## Part 1 — Business Intelligence in Games
-**1. Why BI matters in Games-as-a-Service**
-Games-as-a-service are event-heavy and metric-driven. Player behavior, retention, engagement and monetization can be understood through a large amount of gameplay and business data. DAU is a key engagement metric, while CCU shows intra-day concurrency and peaks, which can be relevant for capacity planning, matchmaking and live operations.
 
-**2. What data is processed?**
-A game company typically combines several types of data:
+1. **Why BI matters in Games-as-a-Service**
 
-**Player / account data**
-account ID
-country / region
-registration and account information
+  Games-as-a-service are event-heavy and metric-driven. Player behavior, retention,
+  engagement and monetization can be understood through a large amount of gameplay
+  and business data. DAU is a key engagement metric, while CCU shows intra-day
+  concurrency and peaks — relevant for capacity planning, matchmaking and live
+  operations.
 
-**Gameplay and session data**
-logins and sessions
-session timestamp and duration
-platform
-gameplay events and player activity
+2. **What data is processed**
 
-**Business data**
-purchases and revenue
-virtual economy / transactions
-subscriptions or other monetization events
+  A game company typically combines several types of data:
 
-**Technical / operational data**
-errors and crashes
-latency and service health
-server / infrastructure metrics
+  - **Player / account data** — account ID, country / region, registration and account
+    information
+  - **Gameplay / session data** — logins and sessions, session timestamp and duration,
+    platform, gameplay events and player activity
+  - **Business data** — purchases and revenue, virtual economy / transactions,
+    subscriptions or other monetization events
+  - **Technical / operational data** — errors and crashes, latency and service health,
+    server / infrastructure metrics
 
-For this assignment specifically, the relevant sources are account data in PostgreSQL and session telemetry in Elasticsearch.
+  For this assignment, the relevant sources are account data in PostgreSQL and session
+  telemetry in Elasticsearch.
 
-**3. Who uses the analysis?**
-Typical stakeholders include:
+3. **Who uses the analysis**
 
-**Product managers** — engagement, retention, feature adoption
-**Game designers / live operations** — player behavior, events and game balance
-**Marketing** — acquisition, conversion and player segments
-**Finance / management** — revenue and monetization
-**Engineering / operations** — concurrency, performance and system health
+  - **Product managers** — engagement, retention, feature adoption
+  - **Game designers / live operations** — player behavior, events and game balance
+  - **Marketing** — acquisition, conversion and player segments
+  - **Finance / management** — revenue and monetization
+  - **Engineering / operations** — concurrency, performance and system health
 
-**4. Typical KPIs**
-**Engagement**
-DAU / WAU / MAU
-sessions per user
-session duration
+4. **Typical KPIs**
 
-**Retention**
-D1 / D7 / D30 retention
-churn
+  - **Engagement** — DAU / WAU / MAU, sessions per user, session duration
+  - **Retention** — D1 / D7 / D30 retention, churn
+  - **Monetization** — revenue, ARPU / ARPPU, payer conversion
+  - **Game / service health** — CCU, peak CCU, crashes / errors, latency
 
-**Monetization**
-revenue
-ARPU / ARPPU
-payer conversion
+5. **Connection to the assignment**
 
-**Game / service health**
-CCU
-peak CCU
-crashes / errors
-latency
-
-**5. Connection to the assignment**
-These metrics come from different source systems, which motivates an analytical layer such as BigQuery where data can be combined and modeled for BI. The dashboard then needs to let stakeholders analyze DAU across time, country and platform.
+  These metrics come from different source systems, which motivates an analytical layer
+  such as BigQuery where data can be combined and modeled for BI. The dashboard then
+  needs to let stakeholders analyze DAU across time, country and platform.
 
 ## Part 2 — DAU Dashboard Design
 
@@ -90,25 +74,3 @@ These metrics come from different source systems, which motivates an analytical 
 - Input `detailed_ccu` is minute-level `(timestamp, ccu)`.
 - **Definition:** "CCU per hour" = `AVG(ccu)` of the minute observations in the hour — the
   query returns just `(hour, AVG(ccu))`, as the assignment asks.
-
-## Likely follow-up questions (and answers)
-
-- **Why BigQuery instead of querying Postgres/ES?** Postgres is transactional and would
-  strain under repeated analytical scans; ES is for search/retrieval, not arbitrary SQL BI.
-  BigQuery fits the analytical workload and is already present. (See architecture doc.)
-- **How does this handle a user whose country changes?** The grain key is
-  `(date, user, platform)`; `country` is derived from `user_id`. We don't backfill history
-  on country change (documented in `daily_user_activity.sql`) — a slowly-changing-dimension
-  policy would decide that explicitly.
-- **How would you productionize this?** Land sources into BigQuery staging (CDC or batch),
-  run `sql/marts/` as scheduled SQL (dbt), swap DuckDB for BigQuery, and point the dashboard
-  to the fact table. See the scale-up section of `docs/architecture.md`.
-- **What did you *not* build?** No Kafka/Spark/K8s/Terraform — out of scope for an
-  interview prototype and unnecessary for the design to be correct at scale.
-
-## How to present
-
-1. Walk the architecture diagram (2 min).
-2. Show the analytical model and the DAU SQL — emphasize grain and non-summability (2 min).
-3. Run `make sample-data && make run` live, then `make test` (2 min).
-4. Show `sql/marts/hourly_ccu.sql` — the `AVG(ccu)`-per-hour query (1 min).
