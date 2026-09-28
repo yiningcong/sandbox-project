@@ -94,7 +94,6 @@ make ccu            # run the hourly-CCU demo query
 make test           # run the pytest suite
 ```
 
-You don't need Docker. `make clean` removes generated data.
 
 ### Setup (details)
 
