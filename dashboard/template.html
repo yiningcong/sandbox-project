@@ -216,8 +216,8 @@
     Because distinct counts don't add up across platforms, the breakdowns show <b>average daily DAU</b> (additive) so every
     filter stays correct. Countries are additive (one country per account).</p>
     <p><b>Local prototype.</b> PostgreSQL → CSV, Elasticsearch → NDJSON, BigQuery → DuckDB (see <i>dashboard/build_data.py</i>).
-    Regenerate with <code>make sample-data &amp;&amp; make run &amp;&amp; make dashboard</code>. Deploy in Looker Studio by pointing its
-    connector at the production <code>fact_daily_user_activity</code> table (partitioned by day, clustered by country &amp; platform).</p>
+    Regenerate with <code>make sample-data &amp;&amp; make run &amp;&amp; make dashboard</code>. In production the same dashboard reads
+    <code>fact_daily_user_activity</code> in BigQuery (partitioned by day, clustered by country &amp; platform).</p>
   </footer>
 </div>
 
