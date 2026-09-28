@@ -74,3 +74,5 @@
 - Input `detailed_ccu` is minute-level `(timestamp, ccu)`.
 - **Definition:** "CCU per hour" = `AVG(ccu)` of the minute observations in the hour — the
   query returns just `(hour, AVG(ccu))`, as the assignment asks.
+- The corresponding SQL query is in `sql/marts/hourly_ccu.sql`.
+- If the business definition is instead **peak CCU per hour**, use `MAX(ccu)`.
