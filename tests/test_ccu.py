@@ -24,24 +24,11 @@ def test_hourly_ccu_is_average_of_minutes(warehouse):
         ("2026-09-20T10:02:00", 30.0),
         ("2026-09-20T10:03:00", 40.0),
     ])
-    hour, avg_ccu, n = warehouse.execute(
-        "SELECT date_trunc('hour', ts), AVG(ccu), COUNT(*) FROM detailed_ccu GROUP BY 1"
+    hour, avg_ccu = warehouse.execute(
+        "SELECT date_trunc('hour', ts), AVG(ccu) FROM detailed_ccu GROUP BY 1"
     ).fetchone()
     assert avg_ccu == 25.0
-    assert n == 4
     assert hour == datetime(2026, 9, 20, 10, 0)
-
-
-def test_hourly_ccu_peak_is_max(warehouse):
-    # The alternative definition: peak hourly concurrency = MAX of minute-level CCU.
-    _load_ccu(warehouse, [
-        ("2026-09-20T10:00:00", 10.0),
-        ("2026-09-20T10:01:00", 40.0),
-    ])
-    hour, peak = warehouse.execute(
-        "SELECT date_trunc('hour', ts), MAX(ccu) FROM detailed_ccu GROUP BY 1"
-    ).fetchone()
-    assert peak == 40.0
 
 
 def test_hours_are_bucketed_separately(warehouse):
@@ -58,10 +45,11 @@ def test_hours_are_bucketed_separately(warehouse):
     ]
 
 
-def test_hourly_ccu_sql_documents_assumption():
-    # Contract check: the shipped BigQuery query expresses the documented
-    # AVG default and the MAX alternative, and truncates to the hour.
+def test_hourly_ccu_sql_returns_only_hour_and_average():
+    # Contract check: the shipped BigQuery query returns exactly hour + AVG(ccu) —
+    # no MAX / COUNT, per the assignment ("a query that returns CCU per hour").
     text = SQL_FILE.read_text()
     assert "TIMESTAMP_TRUNC(timestamp, HOUR)" in text
     assert "AVG(ccu)" in text
-    assert "MAX(ccu)" in text
+    assert "MAX(ccu)" not in text
+    assert "COUNT(*)" not in text

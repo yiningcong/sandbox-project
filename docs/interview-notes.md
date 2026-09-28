@@ -88,10 +88,8 @@ These metrics come from different source systems, which motivates an analytical 
 ## Part 3 — CCU per Hour
 
 - Input `detailed_ccu` is minute-level `(timestamp, ccu)`.
-- **Chosen definition:** "CCU per hour" = `AVG(ccu)` of the minute observations in the hour.
-- **Documented alternative:** peak = `MAX(ccu)`.
-- The point is to *ask which the business means* rather than silently picking one — the
-  query returns both and names the default.
+- **Definition:** "CCU per hour" = `AVG(ccu)` of the minute observations in the hour — the
+  query returns just `(hour, AVG(ccu))`, as the assignment asks.
 
 ## Likely follow-up questions (and answers)
 
@@ -113,4 +111,4 @@ These metrics come from different source systems, which motivates an analytical 
 1. Walk the architecture diagram (2 min).
 2. Show the analytical model and the DAU SQL — emphasize grain and non-summability (2 min).
 3. Run `make sample-data && make run` live, then `make test` (2 min).
-4. Show `sql/marts/hourly_ccu.sql` and the average-vs-peak assumption (1 min).
+4. Show `sql/marts/hourly_ccu.sql` — the `AVG(ccu)`-per-hour query (1 min).

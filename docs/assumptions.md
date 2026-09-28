@@ -26,9 +26,9 @@ local timezone is never consulted.
 
 > **Assumption:** "CCU per hour" = `AVG(ccu)` over the minute-level observations in that hour.
 
-`sql/marts/hourly_ccu.sql` implements `AVG(ccu)` as the default metric and also returns
-`MAX(ccu)` for reference. If the business means *peak* hourly concurrency, use `MAX` — but
-the definition must be chosen once and documented, not mixed. (See Part 3 in the notes.)
+`sql/marts/hourly_ccu.sql` implements exactly this: `TIMESTAMP_TRUNC(timestamp, HOUR)` grouped
+with `AVG(ccu)`. The assignment only asks for "CCU per hour", so the query returns just the
+hour and the average — no `MAX` or minute count.
 
 ## 4. Country comes from accounts; unknown is classified
 

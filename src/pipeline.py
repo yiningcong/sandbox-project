@@ -156,13 +156,13 @@ def run_ccu(config: Config) -> list[tuple]:
     )
     rows = conn.execute(
         "SELECT date_trunc('hour', CAST(\"timestamp\" AS TIMESTAMP)) AS hour, "
-        "AVG(ccu) AS avg_ccu, COUNT(*) AS minute_samples "
+        "AVG(ccu) AS avg_ccu "
         "FROM _ccu GROUP BY 1 ORDER BY 1"
     ).fetchall()
     config.processed_dir.mkdir(parents=True, exist_ok=True)
     conn.execute(
         "COPY (SELECT date_trunc('hour', CAST(\"timestamp\" AS TIMESTAMP)) AS hour, "
-        "AVG(ccu) AS avg_ccu, COUNT(*) AS minute_samples "
+        "AVG(ccu) AS avg_ccu "
         "FROM _ccu GROUP BY 1 ORDER BY 1) TO ? (HEADER true)",
         [str(config.processed_dir / "hourly_ccu.csv")],
     )
@@ -227,8 +227,8 @@ def main(argv: list[str] | None = None) -> None:
     elif args.command == "ccu":
         rows = run_ccu(config)
         print("\n================== hourly CCU (avg of minute-level) ==================")
-        for hour, avg_ccu, n in rows:
-            print(f"  {hour}  avg_ccu={avg_ccu:,.1f}  (n={n})")
+        for hour, avg_ccu in rows:
+            print(f"  {hour}  avg_ccu={avg_ccu:,.1f}")
         print("======================================================================\n")
 
 

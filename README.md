@@ -76,8 +76,8 @@ All assumptions are documented in `docs/assumptions.md`. The three that matter m
    requires identifying unique users, so it is assumed and stated explicitly.
 2. **Timestamps are UTC.** Activity date is derived in UTC (the code never touches the
    machine's local timezone).
-3. **"CCU per hour" = average of minute-level `ccu`.** The alternative (peak = `MAX`) is
-   documented alongside it; the definition is a business choice, not hidden.
+3. **"CCU per hour" = average of minute-level `ccu`.** `sql/marts/hourly_ccu.sql` returns
+   exactly `(hour, AVG(ccu))` — no `MAX` or minute count, per the assignment wording.
 
 ---
 
@@ -198,9 +198,8 @@ computed by summing platform-level DAU** — see `sql/marts/daily_dau.sql`.
 
 ## How CCU per hour is calculated
 
-`sql/marts/hourly_ccu.sql` groups `detailed_ccu` (minute-level) to the hour and takes
-`AVG(ccu)` (the documented default); `MAX(ccu)` is provided as the "peak" alternative. The
-local demo (`make ccu`) runs the equivalent DuckDB query against
+`sql/marts/hourly_ccu.sql` groups `detailed_ccu` (minute-level) to the hour and takes `AVG(ccu)` 
+(the documented default); The local demo (`make ccu`) runs the equivalent DuckDB query against 
 `data/sample/detailed_ccu.csv`.
 
 ---
