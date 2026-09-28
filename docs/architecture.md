@@ -9,7 +9,7 @@ flowchart LR
     C --> D[BigQuery<br/>analytical layer]
     D --> E[fact_daily_user_activity]
     E --> F[DAU / CCU queries]
-    F --> G[Looker Studio]
+    F --> G[Interactive<br/>dashboard]
 ```
 
 The prototype runs the same flow locally with mocks (CSV / NDJSON / DuckDB). The mapping
@@ -21,7 +21,7 @@ is one-to-one:
 | Session source | Elasticsearch `sessions` | `data/sample/sessions.ndjson` |
 | Staging | BigQuery landing tables | `data/raw/` (extracted window) |
 | Warehouse | BigQuery | DuckDB (`src/warehouse.py`) |
-| BI | Looker Studio | `dashboard/README.md` spec |
+| BI / visualization | Interactive web dashboard (GitHub Pages) | `dashboard/index.html` |
 
 ## Source layer
 
@@ -68,9 +68,11 @@ The source of truth for country remains the accounts table.
 
 ## BI layer
 
-Looker Studio connects to BigQuery via the native connector and queries the analytical
-model (never raw sessions). See `dashboard/README.md` for the exact fields, filters and
-charts.
+The visualization is an **interactive web dashboard** (served on GitHub Pages) that queries
+the analytical model, never raw sessions. Locally it renders a pre-aggregated dataset built
+from the fact table (`dashboard/build_data.py`); in production it reads
+`fact_daily_user_activity` in BigQuery directly. See `dashboard/README.md` for the exact
+fields, filters and charts.
 
 ## Why BigQuery (and not Postgres/Elasticsearch directly)
 
@@ -79,7 +81,7 @@ charts.
 - **Elasticsearch** is excellent for search and event retrieval but not intended as a
   general-purpose analytical warehouse for arbitrary SQL BI.
 - **BigQuery** is built for large analytical datasets, standard SQL, partitioning/clustering,
-  managed infra, and first-class Looker Studio integration.
+  managed infra, and a serverless SQL API.
 
 BigQuery isn't "universally superior" — it's the right choice *for this workload*: the
 environment already has BigQuery, the data is analytical in nature, and the dashboard

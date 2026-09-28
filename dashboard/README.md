@@ -1,20 +1,25 @@
-# Dashboard specification (Looker Studio)
+# Dashboard specification
 
-> **To actually see this in Looker Studio**, run `make looker-export` and follow
-> `docs/looker-studio.md` — it walks through the Google Sheets connector (no cloud
-> credentials) and the production BigQuery path. Looker Studio cannot read the local
-> Parquet/HTML directly; that is why this file is a spec rather than a live report.
+The visualization is the **interactive web dashboard** served on GitHub Pages:
 
-The dashboard queries the **analytical model** (`fact_daily_user_activity` in BigQuery),
-never raw sessions. Looker Studio connects to BigQuery with the native connector.
+- **Live:** <https://yiningcong.github.io/sandbox-project/>
+- **Source:** `dashboard/template.html` (built into `index.html` by `dashboard/build_data.py`)
+- **Data:** pre-aggregated from `fact_daily_user_activity` (see "Data source" below)
+
+The assignment allows "Google Looker Studio **or similar visualization software**"; this
+dashboard is the chosen alternative. It implements the same analytical model and filters, so
+the production design (BigQuery → `fact_daily_user_activity`) is unchanged.
 
 ## Data source
 
-- **Connector:** BigQuery (native in Looker Studio).
-- **Table:** `analytics.fact_daily_user_activity` (partitioned by `activity_date`,
-  clustered by `country`, `platform`).
-- **Custom SQL (optional):** use the queries in `sql/marts/daily_dau.sql` so the DAU
-  definition is centralized.
+The dashboard never queries raw sessions — it renders the analytical model
+`fact_daily_user_activity` (partitioned by `activity_date`, clustered by `country`,
+`platform`).
+
+- **Local:** `dashboard/data.json`, pre-aggregated by `dashboard/build_data.py` from
+  `data/processed/fact_daily_user_activity.parquet`.
+- **Production:** the same table in BigQuery (`analytics.fact_daily_user_activity`); the DAU
+  definition stays centralized in `sql/marts/daily_dau.sql`.
 
 ## Filters
 
@@ -46,5 +51,5 @@ consistently.
 - A user on **multiple platforms in one day** is one DAU overall but appears once per
   platform in the "DAU by platform" chart. Do **not** configure the overall DAU scorecard
   as a sum of the platform bars — it would double-count those users.
-- A multi-year date range works because the table is date-partitioned; the query still
-  returns per-day DAU, and Looker Studio handles the axis granularity.
+- A multi-year date range works because the table is date-partitioned; the dashboard renders
+  per-day DAU at whatever axis granularity the range requires.
